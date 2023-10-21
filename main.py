@@ -1,11 +1,23 @@
 from flask import Flask
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
 from flask_sqlalchemy import SQLAlchemy
+import os
 
 app = Flask(__name__)
 api = Api(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+
+
 db = SQLAlchemy(app)
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+@app.before_first_request
+def create_tables():
+    db.create_all()
+
+
 
 class VideoModel(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
@@ -80,10 +92,11 @@ class Video(Resource):
 
 api.add_resource(Video, "/video/<int:video_id>")
 
-if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0')
-
 @app.route('/')
 def index():
     return "Welcome to the Flask Rest API!"
+
+if __name__ == "__main__":
+    app.run(debug=True, host='0.0.0.0')
+
 
