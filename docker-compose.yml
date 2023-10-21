@@ -1,8 +1,28 @@
 version: '3'
+
 services:
   web:
     build: .
+    environment:
+      - DATABASE_URL=postgresql://username:password@db:5432/dbname
+    depends_on:
+      - db
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
     ports:
-      - "5000:5000"
+      - "80:80"
+    depends_on:
+      - web
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: dbname
     volumes:
-      - ./database.db:/app/database.db
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
